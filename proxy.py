@@ -23,6 +23,8 @@ def create_parser() -> argparse.ArgumentParser:
     add_parser.add_argument('--netuid', type=int, required=True, help='Network/subnet ID')
     add_parser.add_argument('--hotkey', type=str, required=True, help='Hotkey address')
     add_parser.add_argument('--amount', type=float, help='Amount to stake')
+    add_parser.add_argument('--name', type=str, default=".env", help='Specify the environment')
+    add_parser.add_argument('--tolerance', type=float, default=0.05, help='Tolerance for stake') #tolerence by mrbreo
     
     # Remove stake command
     remove_parser = subparsers.add_parser('removestake', help='Remove stake from a subnet')
@@ -30,6 +32,8 @@ def create_parser() -> argparse.ArgumentParser:
     remove_parser.add_argument('--hotkey', type=str, required=True, help='Hotkey address')
     remove_parser.add_argument('--amount', type=float, default=0, help='Amount to unstake')
     remove_parser.add_argument('--all', action='store_true', help='Remove all staked balance')
+    remove_parser.add_argument('--name', type=str, default=".env", help='Specify the environment')
+    remove_parser.add_argument('--tolerance', type=float, default=0.05, help='Tolerance for stake') #tolerence by mrbreo
     
     # Swap stake command
     swap_parser = subparsers.add_parser('swapstake', help='Swap stake between subnets')
@@ -38,6 +42,7 @@ def create_parser() -> argparse.ArgumentParser:
     swap_parser.add_argument('--dest-netuid', type=int, required=True, help='Destination subnet ID')
     swap_parser.add_argument('--amount', type=float, default=0, help='Amount to swap')
     swap_parser.add_argument('--all', action='store_true', help='Swap all available balance')
+    swap_parser.add_argument('--name', type=str, default=".env", help='Specify the environment')
     
     return parser
 
@@ -65,16 +70,16 @@ def main():
     # Import environment variables
     from dotenv import load_dotenv
     import os
-    load_dotenv()
+    # load_dotenv()
     
-    network = os.getenv('NETWORK')
-    delegator = os.getenv('DELEGATOR')
-    proxy_wallet = os.getenv('PROXY_WALLET')
+    # network = os.getenv('NETWORK')
+    # delegator = os.getenv('DELEGATOR')
+    # proxy_wallet = os.getenv('PROXY_WALLET')
     
-    # Validate environment variables
-    if not network or not delegator or not proxy_wallet:
-        print("Error: Missing environment variables")
-        sys.exit(1)
+    # # Validate environment variables
+    # if not network or not delegator or not proxy_wallet:
+    #     print("Error: Missing environment variables")
+    #     sys.exit(1)
 
     # Create parser
     parser = create_parser()
@@ -85,6 +90,55 @@ def main():
         sys.exit(1)
     
     args = parser.parse_args()
+    if args.name == ".env":
+        env_file = f".env"
+    elif args.name == "webgenie":
+        env_file = f".env.vlad.webgenie" 
+    elif args.name == "green":
+        env_file = f".env.vlad.green" 
+    elif args.name == "black":
+        env_file = f".env.vlad.black" 
+    elif args.name == "breo":
+        env_file = f".env.breo.breo" 
+    elif args.name == "kb":
+        env_file = f".env.breo.kb" 
+    elif args.name == "tck":
+        env_file = f".env.breo.tck" 
+    elif args.name == "lazyterry":
+        env_file = f".env.thunder.lazyterry" 
+    elif args.name == "const":
+        env_file = f".env.druid.const" 
+    elif args.name == "taomind":
+        env_file = f".env.druid.taomind" 
+    elif args.name == "terry":
+        env_file = f".env.druid.terry" 
+    elif args.name == "gang":
+        env_file = f".env.sky.gang" 
+    elif args.name == "izo":
+        env_file = f".env.sky.izo" 
+    elif args.name == "sky":
+        env_file = f".env.sky.sky" 
+
+    print(f"Env file: {env_file}")
+
+    # Load the specified .env file
+    if os.path.exists(env_file):
+        load_dotenv(env_file, override=True)
+    else:
+        raise FileNotFoundError(f"The environment file {env_file} does not exist.")
+    
+    network = os.getenv('NETWORK')
+    delegator = os.getenv('DELEGATOR')
+    proxy_wallet = os.getenv('PROXY_WALLET')
+
+    print(f"Network: {network}")
+    print(f"Delegator: {delegator}")
+    print(f"Proxy wallet: {proxy_wallet}")
+
+    if not network or not delegator or not proxy_wallet:
+        print("Error: Missing environment variables")
+        sys.exit(1)
+
     
     # Validate arguments
     if not args.command:
@@ -108,12 +162,14 @@ def main():
                 netuid=args.netuid,
                 hotkey=args.hotkey,
                 amount=Balance.from_tao(args.amount),
+                tolerance=args.tolerance,
             )
         elif args.command == 'removestake':
             ron_proxy.remove_stake(
                 netuid=args.netuid,
                 hotkey=args.hotkey,
                 amount=Balance.from_tao(args.amount, netuid=args.netuid),
+                tolerance=args.tolerance,
                 all=args.all,
             )
         elif args.command == 'swapstake':
@@ -132,3 +188,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
