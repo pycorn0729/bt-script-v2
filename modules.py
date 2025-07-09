@@ -253,14 +253,8 @@ class RonProxy:
                 wait_for_inclusion=True,
                 wait_for_finalization=False,
             )
-        except SubstrateRequestException as e:
-            error_message = e.message
-            if "Custom error: 8" in str(e):
-                error_message = f"""
-                    \n{failure_prelude}: Price exceeded tolerance limit.
-                    Transaction rejected because partial unstaking is disabled.
-                    Either increase price tolerance or enable partial unstaking.
-                """
+        except Exception as e:
+            error_message = str(e)
             return False, error_message
         
         print(f"Extrinsic: {receipt.get_extrinsic_identifier()}")
