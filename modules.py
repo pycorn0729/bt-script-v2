@@ -88,7 +88,14 @@ class RonProxy:
         )
         is_success, error_message = self._do_proxy_call(call)
         if is_success:
-            print(f"Stake added successfully")
+            new_balance = self.subtensor.get_balance(
+                address=self.delegator,
+            )
+            if new_balance.rao < balance.rao:
+                print(f"Stake added successfully, balance changed from {balance.rao} to {new_balance.rao}")
+                return
+            else:
+                print(f"Stake added failed")
         else:
             print(f"Error: {error_message}")
 
@@ -161,7 +168,14 @@ class RonProxy:
         )
         is_success, error_message = self._do_proxy_call(call)
         if is_success:
-            print(f"Stake removed successfully")
+            new_balance = self.subtensor.get_balance(
+                address=self.delegator,
+            )
+            if new_balance.rao > balance.rao:
+                print(f"Stake removed successfully, balance changed from {balance.rao} to {new_balance.rao}")
+                return
+            else:
+                print(f"Stake removal failed")
         else:
             print(f"Error: {error_message}")
 
