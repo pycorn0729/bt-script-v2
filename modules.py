@@ -91,6 +91,8 @@ class RonProxy:
             new_balance = self.subtensor.get_balance(
                 address=self.delegator,
             )
+            print(f"New balance: {new_balance}")
+            print(f"Balance: {balance}")
             if new_balance.rao < balance.rao:
                 print(f"Stake added successfully, balance changed from {balance.rao} to {new_balance.rao}")
                 return
@@ -171,6 +173,8 @@ class RonProxy:
             new_balance = self.subtensor.get_balance(
                 address=self.delegator,
             )
+            print(f"New balance: {new_balance}")
+            print(f"Balance: {balance}")
             if new_balance.rao > balance.rao:
                 print(f"Stake removed successfully, balance changed from {balance.rao} to {new_balance.rao}")
                 return
