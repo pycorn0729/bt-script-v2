@@ -103,12 +103,6 @@ class Proxy:
             amount: Amount to unstake (if not using --all)
             all: Whether to unstake all available balance
         """
-        balance = self.subtensor.get_stake(
-            coldkey_ss58=delegator,
-            hotkey_ss58=hotkey,
-            netuid=netuid,
-        )
-
         subnet_info = self.subtensor.subnet(netuid)
         if not subnet_info:
             return False, f"Subnet with netuid {netuid} does not exist"

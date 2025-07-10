@@ -25,7 +25,7 @@ class StakeService:
         self.proxy = Proxy(settings.NETWORK)
         self.subtensor = bt.subtensor(network=settings.NETWORK)
     
-    def calculate_min_tolerance(self, tao_amount: float, netuid: int) -> float:
+    def get_stake_min_tolerance(self, tao_amount: float, netuid: int) -> float:
         """
         Calculate the minimum tolerance for staking operations.
         
@@ -41,6 +41,18 @@ class StakeService:
             raise ValueError(f"Subnet with netuid {netuid} does not exist")
         min_tolerance = tao_amount / subnet.tao_in.tao
         return min_tolerance
+
+
+    def get_unstake_min_tolerance(self, tao_amount: float, netuid: int) -> float:
+        """
+        Calculate the minimum tolerance for unstaking operations.
+        """
+        subnet = self.subtensor.subnet(netuid=netuid)
+        if subnet is None:
+            raise ValueError(f"Subnet with netuid {netuid} does not exist")
+        min_tolerance = tao_amount / (tao_amount + subnet.alpha_in.tao)
+        return min_tolerance
+
     
     def stake(
         self,
@@ -154,7 +166,7 @@ class StakeService:
             )
         else:
             # Convert TAO amount to Balance object
-            amount_balance = bt.Balance.from_tao(amount / subnet.price.tao, netuid)
+            amount_balance = bt.Balance.from_tao(amount, netuid)
         
         
         # Adjust rate tolerance if using minimum tolerance unstaking

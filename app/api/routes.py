@@ -14,14 +14,23 @@ router = APIRouter()
 stake_service = StakeService(wallets)
 
 
-@router.get("/min_tolerance")
-def min_tolerance(
+@router.get("/min_stake_tolerance")
+def min_stake_tolerance(
     tao_amount: float,
     netuid: int,
 ):
-    min_tol = stake_service.calculate_min_tolerance(tao_amount, netuid)
+    min_tol = stake_service.get_stake_min_tolerance(tao_amount, netuid)
     return {"min_tolerance": min_tol}
 
+
+@router.get("/min_unstake_tolerance")
+def min_unstake_tolerance(
+    tao_amount: float,
+    netuid: int,
+):
+    min_tol = stake_service.get_unstake_min_tolerance(tao_amount, netuid)
+    return {"min_tolerance": min_tol}
+    
 
 @router.get("/stake")
 def stake(
