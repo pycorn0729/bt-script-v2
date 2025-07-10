@@ -47,10 +47,10 @@ class StakeService:
         tao_amount: float,
         netuid: int,
         wallet_name: str,
-        dest_hotkey: str = ROUND_TABLE_HOTKEY,
-        rate_tolerance: float = 0.005,
-        min_tolerance_staking: bool = True,
-        retries: int = 1
+        dest_hotkey: str = settings.DEFAULT_DEST_HOTKEY,
+        rate_tolerance: float = settings.DEFAULT_RATE_TOLERANCE,
+        min_tolerance_staking: bool = settings.DEFAULT_MIN_TOLERANCE,
+        retries: int = settings.DEFAULT_RETRIES
     ) -> Dict[str, Any]:
         """
         Execute staking operation with retry mechanism and error handling.
@@ -66,42 +66,27 @@ class StakeService:
             
         Returns:
             Dict containing success status, result, and min_tolerance
-        """
-        # Validate retries parameter
-        if retries < 1:
-            retries = 1
-            
-        result = None
-        min_tolerance = None
-        
-        # Get wallet and delegator
-        if wallet_name not in self.wallets:
-            return {
-                "success": False,
-                "result": None,
-                "min_tolerance": None,
-                "error": f"Wallet '{wallet_name}' not found"
-            }
-            
+        """ 
         wallet, delegator = self.wallets[wallet_name]
-        
-        # Calculate minimum tolerance
-        subnet = self.subtensor.subnet(netuid=netuid)
-        if subnet is None:
-            return {
-                "success": False,
-                "result": None,
-                "min_tolerance": None,
-                "error": f"Subnet with netuid {netuid} does not exist"
-            }
-        min_tolerance = tao_amount / subnet.tao_in.tao
         
         # Adjust rate tolerance if using minimum tolerance staking
         if min_tolerance_staking:
+            # Calculate minimum tolerance
+            subnet = self.subtensor.subnet(netuid=netuid)
+            if subnet is None:
+                return {
+                    "success": False,
+                    "error": f"Subnet with netuid {netuid} does not exist"
+                }
+            min_tolerance = tao_amount / subnet.tao_in.tao
+    
             rate_tolerance = min_tolerance + 0.001
         
         # Execute staking with retry mechanism
-        while retries > 0:
+        success = False
+        msg = None
+
+        for _ in range(retries):
             try:
                 result, msg = self.proxy.add_stake(
                     amount=bt.Balance.from_tao(tao_amount),
@@ -112,31 +97,17 @@ class StakeService:
                     tolerance=rate_tolerance,
                 )
                 
-                if not result:
-                    raise Exception(f"Stake operation failed: {msg}")
-                
-                return {
-                    "success": True,
-                    "result": result,
-                    "min_tolerance": min_tolerance,
-                }
-                
+                if result:
+                    success = True
+                    break
             except Exception as e:
-                retries -= 1
-                if retries == 0:
-                    return {
-                        "success": False,
-                        "result": result,
-                        "min_tolerance": min_tolerance,
-                        "error": str(e)
-                    }
+                msg = str(e)
+                continue
         
         # This should never be reached, but required for type checking
         return {
-            "success": False,
-            "result": None,
-            "min_tolerance": min_tolerance,
-            "error": "Unexpected error in stake operation"
+            "success": success,
+            "error": msg
         }
     
     def unstake(
@@ -144,10 +115,10 @@ class StakeService:
         netuid: int,
         wallet_name: str,
         amount: Optional[float] = None,
-        dest_hotkey: str = ROUND_TABLE_HOTKEY,
-        rate_tolerance: float = 0.005,
-        min_tolerance_unstaking: bool = True,
-        retries: int = 1
+        dest_hotkey: str = settings.DEFAULT_DEST_HOTKEY,
+        rate_tolerance: float = settings.DEFAULT_RATE_TOLERANCE,
+        min_tolerance_unstaking: bool = settings.DEFAULT_MIN_TOLERANCE,
+        retries: int = settings.DEFAULT_RETRIES
     ) -> Dict[str, Any]:
         """
         Execute unstaking operation with retry mechanism and error handling.
@@ -163,30 +134,13 @@ class StakeService:
             
         Returns:
             Dict containing success status, result, and min_tolerance
-        """
-        # Validate retries parameter
-        if retries < 1:
-            retries = 1
-            
-        result = None
-        
-        # Get wallet and delegator
-        if wallet_name not in self.wallets:
-            return {
-                "success": False,
-                "result": None,
-                "min_tolerance": None,
-                "error": f"Wallet '{wallet_name}' not found"
-            }
-            
+        """ 
         wallet, delegator = self.wallets[wallet_name]
         subnet = self.subtensor.subnet(netuid=netuid)
         
         if subnet is None:
             return {
                 "success": False,
-                "result": None,
-                "min_tolerance": None,
                 "error": f"Subnet with netuid {netuid} does not exist"
             }
         
@@ -202,15 +156,18 @@ class StakeService:
             # Convert TAO amount to Balance object
             amount_balance = bt.Balance.from_tao(amount / subnet.price.tao, netuid)
         
-        # Calculate minimum tolerance for unstaking
-        min_tolerance = amount_balance.tao / (amount_balance.tao + subnet.alpha_in.tao)
         
         # Adjust rate tolerance if using minimum tolerance unstaking
         if min_tolerance_unstaking:
+            # Calculate minimum tolerance for unstaking
+            min_tolerance = amount_balance.tao / (amount_balance.tao + subnet.alpha_in.tao)
             rate_tolerance = min_tolerance + 0.001
         
         # Execute unstaking with retry mechanism
-        while retries > 0:
+        success = False
+        msg = None
+
+        for _ in range(retries):
             try:
                 result, msg = self.proxy.remove_stake(
                     netuid=netuid,
@@ -220,30 +177,15 @@ class StakeService:
                     hotkey=dest_hotkey,
                     tolerance=rate_tolerance,
                 )
-                
-                if not result:
-                    raise Exception(f"Unstake operation failed: {msg}")
-                
-                return {
-                    "success": True,
-                    "result": result,
-                    "min_tolerance": min_tolerance,
-                }
-                
+                if result:
+                    success = True
+                    break     
             except Exception as e:
-                retries -= 1
-                if retries == 0:
-                    return {
-                        "success": False,
-                        "result": result,
-                        "min_tolerance": min_tolerance,
-                        "error": str(e)
-                    }
+                msg = str(e)                
+                continue
         
         # This should never be reached, but required for type checking
         return {
-            "success": False,
-            "result": None,
-            "min_tolerance": min_tolerance,
-            "error": "Unexpected error in unstake operation"
+            "success": success,
+            "error": msg
         }

@@ -28,12 +28,23 @@ def stake(
     tao_amount: float,
     netuid: int,
     wallet_name: str,
-    dest_hotkey: str = ROUND_TABLE_HOTKEY,
-    rate_tolerance: float = 0.005,
-    min_tolerance_staking: bool = True,
-    retries: int = 1,
+    dest_hotkey: str = settings.DEFAULT_DEST_HOTKEY,
+    rate_tolerance: float = settings.DEFAULT_RATE_TOLERANCE,
+    min_tolerance_staking: bool = settings.DEFAULT_MIN_TOLERANCE,
+    retries: int = settings.DEFAULT_RETRIES,
     username: str = Depends(get_current_username)
 ):
+    # Validate retries parameter
+    if retries < 1:
+        retries = 1    
+    
+    # Get wallet and delegator
+    if wallet_name not in stake_service.wallets:
+        return {
+            "success": False,
+            "error": f"Wallet '{wallet_name}' not found"
+        }
+
     return stake_service.stake(
         tao_amount=tao_amount,
         netuid=netuid,
@@ -50,12 +61,23 @@ def unstake(
     netuid: int,
     wallet_name: str,
     amount: Optional[float] = None,
-    dest_hotkey: str = ROUND_TABLE_HOTKEY,
-    rate_tolerance: float = 0.005,
-    min_tolerance_unstaking: bool = True,
-    retries: int = 1,
+    dest_hotkey: str = settings.DEFAULT_DEST_HOTKEY,
+    rate_tolerance: float = settings.DEFAULT_RATE_TOLERANCE,
+    min_tolerance_unstaking: bool = settings.DEFAULT_MIN_TOLERANCE,
+    retries: int = settings.DEFAULT_RETRIES,
     username: str = Depends(get_current_username)
 ):
+    # Validate retries parameter
+    if retries < 1:
+        retries = 1    
+    
+    # Get wallet and delegator
+    if wallet_name not in stake_service.wallets:
+        return {
+            "success": False,
+            "error": f"Wallet '{wallet_name}' not found"
+        }
+
     return stake_service.unstake(
         netuid=netuid,
         wallet_name=wallet_name,
