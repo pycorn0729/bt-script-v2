@@ -43,13 +43,13 @@ class RonProxy:
             amount: Amount to stake
             tolerance: Tolerance for stake amount
         """
-        balance = self.subtensor.get_balance(
+        free_balance = self.subtensor.get_balance(
             address=self.delegator,
         )
         print("--------------------------------")
         print(f"Adding stake...")
         print(f"Tolerance set to: {tolerance}")
-        print(f"Current balance: {balance}")
+        print(f"Current free balance: {free_balance}")
         
         confirm = input(f"Do you really want to stake {amount}? (y/n)")
         if confirm == "y":
@@ -88,13 +88,13 @@ class RonProxy:
         )
         is_success, error_message = self._do_proxy_call(call)
         if is_success:
-            new_balance = self.subtensor.get_balance(
+            new_free_balance = self.subtensor.get_balance(
                 address=self.delegator,
             )
-            print(f"New balance: {new_balance}")
-            print(f"Balance: {balance}")
-            if new_balance.rao < balance.rao:
-                print(f"Stake added successfully, balance changed from {balance.rao} to {new_balance.rao}")
+            print(f"New free balance: {new_free_balance}")
+            print(f"Free balance: {free_balance}")
+            if new_free_balance.rao < free_balance.rao:
+                print(f"Stake added successfully, free balance changed from {free_balance.rao} to {new_free_balance.rao}")
                 return
             else:
                 print(f"Stake added failed")
@@ -157,6 +157,10 @@ class RonProxy:
             rate_with_tolerance = 1
             price_with_tolerance = 1
 
+        free_balance = self.subtensor.get_balance(
+            address=self.delegator,
+        )
+        
         call = self.substrate.compose_call(
             call_module='SubtensorModule',
             call_function='remove_stake_limit',
@@ -170,13 +174,11 @@ class RonProxy:
         )
         is_success, error_message = self._do_proxy_call(call)
         if is_success:
-            new_balance = self.subtensor.get_balance(
+            free_new_balance = self.subtensor.get_balance(
                 address=self.delegator,
             )
-            print(f"New balance: {new_balance}")
-            print(f"Balance: {balance}")
-            if new_balance.rao > balance.rao:
-                print(f"Stake removed successfully, balance changed from {balance.rao} to {new_balance.rao}")
+            if free_new_balance.rao > free_balance.rao:
+                print(f"Stake removed successfully, free balance changed from {free_balance.rao} to {free_new_balance.rao}")
                 return
             else:
                 print(f"Stake removal failed")
