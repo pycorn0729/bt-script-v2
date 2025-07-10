@@ -42,7 +42,7 @@ class Proxy:
             amount: Amount to stake
             tolerance: Tolerance for stake amount
         """
-        balance = self.subtensor.get_balance(
+        free_balance = self.subtensor.get_balance(
             address=delegator,
         )
         
@@ -75,10 +75,10 @@ class Proxy:
             }
         )
         is_success, error_message = self._do_proxy_call(proxy_wallet, delegator, call)
-        new_balance = self.subtensor.get_balance(
+        new_free_balance = self.subtensor.get_balance(
             address=delegator,
         )
-        if new_balance.rao < balance.rao:
+        if new_free_balance.rao < free_balance.rao:
             return True, f"Stake added successfully"
         else:
             return False, f"Error: {error_message}"
@@ -109,7 +109,6 @@ class Proxy:
             netuid=netuid,
         )
 
-        
         subnet_info = self.subtensor.subnet(netuid)
         if not subnet_info:
             return False, f"Subnet with netuid {netuid} does not exist"
@@ -137,11 +136,14 @@ class Proxy:
                 "allow_partial": False,
             }
         )
-        is_success, error_message = self._do_proxy_call(proxy_wallet, delegator, call)
-        new_balance = self.subtensor.get_balance(
+        free_balance = self.subtensor.get_balance(
             address=delegator,
         )
-        if new_balance.rao > balance.rao:
+        is_success, error_message = self._do_proxy_call(proxy_wallet, delegator, call)
+        new_free_balance = self.subtensor.get_balance(
+            address=delegator,
+        )
+        if new_free_balance.rao > free_balance.rao:
             return True, f"Stake removed successfully"
         else:
             return False, f"Error: {error_message}"

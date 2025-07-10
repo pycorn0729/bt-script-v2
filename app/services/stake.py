@@ -103,7 +103,7 @@ class StakeService:
         # Execute staking with retry mechanism
         while retries > 0:
             try:
-                result = self.proxy.add_stake(
+                result, msg = self.proxy.add_stake(
                     amount=bt.Balance.from_tao(tao_amount),
                     proxy_wallet=wallet,
                     delegator=delegator,
@@ -113,7 +113,7 @@ class StakeService:
                 )
                 
                 if not result:
-                    raise Exception("Stake operation failed")
+                    raise Exception(f"Stake operation failed: {msg}")
                 
                 return {
                     "success": True,
@@ -212,7 +212,7 @@ class StakeService:
         # Execute unstaking with retry mechanism
         while retries > 0:
             try:
-                result = self.proxy.remove_stake(
+                result, msg = self.proxy.remove_stake(
                     netuid=netuid,
                     proxy_wallet=wallet,
                     delegator=delegator,
@@ -222,7 +222,7 @@ class StakeService:
                 )
                 
                 if not result:
-                    raise Exception("Unstake operation failed")
+                    raise Exception(f"Unstake operation failed: {msg}")
                 
                 return {
                     "success": True,
