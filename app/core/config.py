@@ -19,9 +19,9 @@ class Settings(BaseModel):
     DEFAULT_DEST_HOTKEY: str = ROUND_TABLE_HOTKEY
     
     # Load wallet names from environment variable, fallback to default
-    WALLET_NAMES: List[str] = os.getenv("WALLET_NAMES", "black,white").split(",")
+    WALLET_NAMES: List[str] = os.getenv("WALLET_NAMES", "").split(",")
     
     # Load delegators from environment variable, fallback to default
-    DELEGATORS: List[str] = os.getenv("DELEGATORS", "5F5WLLEzDBXQDdTzDYgbQ3d3JKbM15HhPdFuLMmuzcUW5xG2,5F99Qc6hZ67Jd6fW9jXgD3h9Jg4K5pQ9jXgD3h9Jg4K5p").split(",")
+    DELEGATORS: List[str] = os.getenv("DELEGATORS", "").split(",")
 
 settings = Settings()

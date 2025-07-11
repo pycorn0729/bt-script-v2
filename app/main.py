@@ -30,15 +30,22 @@ def read_root(request: fastapi.Request, username: str = Depends(get_current_user
             balance = subtensor.get_balance(delegator)
             balance_html += f"""
                 <div class="balance-container">
-                    <div class="balance-title"><a target="_blank" href="/stake_list?wallet_name={wallet_name}" style="text-decoration: none; color: inherit; cursor: pointer; text-decoration: underline;">{wallet_name}</a></div>
+                    <div class="balance-title"><a target="_blank" href="/stake_list?wallet_name={delegator}" style="text-decoration: none; color: inherit; cursor: pointer; text-decoration: underline;">{wallet_name}</a></div>
                     <div class="balance-amount">{balance} TAO</div>
                 </div>
             """
         return balance_html
+    print(settings.WALLET_NAMES)
+    print(settings.DELEGATORS)
 
     return templates.TemplateResponse(
         "index.html",
-        {"request": request, "balance_html": get_balance_html(), "wallet_names": settings.WALLET_NAMES}
+        {
+            "request": request, 
+            "balance_html": get_balance_html(), 
+            "wallet_names": settings.WALLET_NAMES,
+            "delegators": settings.DELEGATORS,
+        }
     )
 
 
