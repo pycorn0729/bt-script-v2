@@ -17,10 +17,14 @@ class Proxy:
         """
         self.network = network
         self.subtensor = bt.subtensor(network=network)
+        
+
+    def init_runtime(self):
         self.substrate = SubstrateInterface(
-            url=network,
+            url=self.network,
             ss58_format=42,
             type_registry_preset='substrate-node-template',
+            auto_reconnect=True,
         )
 
     def add_stake(
@@ -45,7 +49,7 @@ class Proxy:
         free_balance = self.subtensor.get_balance(
             address=delegator,
         )
-        
+        print(f"free_balance: {free_balance}")
         subnet_info = self.subtensor.subnet(netuid)
         if not subnet_info:
             return False, f"Subnet with netuid {netuid} does not exist"
@@ -63,6 +67,8 @@ class Proxy:
             rate_with_tolerance = "1"
             price_with_tolerance = Balance.from_rao(1)
 
+        print(f"price_with_tolerance: {price_with_tolerance}")
+        self.init_runtime()
         call = self.substrate.compose_call(
             call_module='SubtensorModule',
             call_function='add_stake_limit',
@@ -74,6 +80,7 @@ class Proxy:
                 "allow_partial": False,
             }
         )
+        print(f"call: {call}")
         is_success, error_message = self._do_proxy_call(proxy_wallet, delegator, call)
         new_free_balance = self.subtensor.get_balance(
             address=delegator,
@@ -119,6 +126,7 @@ class Proxy:
             rate_with_tolerance = 1
             price_with_tolerance = 1
         print(f"amount: {amount.rao}")
+        self.init_runtime()
         call = self.substrate.compose_call(
             call_module='SubtensorModule',
             call_function='remove_stake_limit',
@@ -133,6 +141,7 @@ class Proxy:
         free_balance = self.subtensor.get_balance(
             address=delegator,
         )
+        
         is_success, error_message = self._do_proxy_call(proxy_wallet, delegator, call)
         new_free_balance = self.subtensor.get_balance(
             address=delegator,
@@ -161,6 +170,7 @@ class Proxy:
             call=proxy_call,
             keypair=proxy_wallet.coldkey,
         )
+        print(f"extrinsic: {extrinsic}")
         try:
             receipt = self.substrate.submit_extrinsic(
                 extrinsic,
