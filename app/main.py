@@ -35,8 +35,6 @@ def read_root(request: fastapi.Request, username: str = Depends(get_current_user
                 </div>
             """
         return balance_html
-    print(settings.WALLET_NAMES)
-    print(settings.DELEGATORS)
 
     return templates.TemplateResponse(
         "index.html",
