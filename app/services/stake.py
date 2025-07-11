@@ -148,29 +148,33 @@ class StakeService:
             Dict containing success status, result, and min_tolerance
         """ 
         wallet, delegator = self.wallets[wallet_name]
-        subnet = self.subtensor.subnet(netuid=netuid)
-        
-        if subnet is None:
-            return {
-                "success": False,
-                "error": f"Subnet with netuid {netuid} does not exist"
-            }
         
         # Determine amount to unstake
         if amount is None:
             # Unstake all available balance
             amount_balance = self.subtensor.get_stake(
-                coldkey_ss58=wallet.coldkeypub.ss58_address,
+                coldkey_ss58=delegator,
                 hotkey_ss58=dest_hotkey,
                 netuid=netuid
             )
         else:
             # Convert TAO amount to Balance object
             amount_balance = bt.Balance.from_tao(amount, netuid)
-        
+
+        if amount_balance.rao <= 0:
+            return {
+                "success": False,
+                "error": "No balance to unstake"
+            }
         
         # Adjust rate tolerance if using minimum tolerance unstaking
         if min_tolerance_unstaking:
+            subnet = self.subtensor.subnet(netuid=netuid)
+            if subnet is None:
+                return {
+                    "success": False,
+                    "error": f"Subnet with netuid {netuid} does not exist"
+                }
             # Calculate minimum tolerance for unstaking
             min_tolerance = amount_balance.tao / (amount_balance.tao + subnet.alpha_in.tao)
             rate_tolerance = min_tolerance + 0.001

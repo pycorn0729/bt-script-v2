@@ -10,7 +10,7 @@ load_dotenv()
 
 class Settings(BaseModel):
     VERSION: str = "0.1.0"
-    NETWORK: str = "finney"
+    NETWORK: str = "wss://entrypoint-finney.opentensor.ai:443"
     # WALLET_NAMES: List[str] = []
     # DELEGATORS: List[str] = []
     DEFAULT_RATE_TOLERANCE: float = 0.005

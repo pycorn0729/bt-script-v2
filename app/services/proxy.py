@@ -118,7 +118,7 @@ class Proxy:
         else:
             rate_with_tolerance = 1
             price_with_tolerance = 1
-
+        print(f"amount: {amount.rao}")
         call = self.substrate.compose_call(
             call_module='SubtensorModule',
             call_function='remove_stake_limit',
