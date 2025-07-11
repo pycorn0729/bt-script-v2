@@ -14,6 +14,9 @@ def unlock_wallets():
             try:
                 wallet.unlock_coldkey()
                 break
+            except KeyboardInterrupt:
+                print(f"\nInterrupted while unlocking wallet {wallet_name}")
+                raise  # Re-raise to exit the program
             except Exception as e:
                 print(f"Error unlocking wallet {wallet_name}: {e}")
                 continue
