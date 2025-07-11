@@ -220,7 +220,7 @@
                 <div class="input-group">
                     <label class="input-label">Wallet Name</label>
                     <select id="stakeWalletName" class="input-field">
-                        {% for wallt in wallet_names %}
+                        {% for wallet in wallet_names %}
                             <option value="{{ wallet }}" {% if loop.first %}selected{% endif %}>{{ wallet }}</option>
                         {% endfor %}
                     </select>
@@ -325,58 +325,6 @@
         }
         // Set default tab
         showTab('balances');
-
-        // Fetch and display balances
-        async function fetchBalances() {
-            try {
-                const response = await fetch('/');
-                const html = await response.text();
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const balanceContainer = doc.querySelector('#balanceContainer');
-                document.getElementById('balanceContainer').innerHTML = balanceContainer.innerHTML;
-                
-                // Update wallet select options
-                updateWalletSelect();
-            } catch (error) {
-                console.error('Error fetching balances:', error);
-            }
-        }
-
-        // Update wallet select options
-        function updateWalletSelect() {
-            const balanceContainer = document.getElementById('balanceContainer');
-            const walletElements = balanceContainer.querySelectorAll('.balance-container');
-            const stakeSelect = document.getElementById('stakeWalletName');
-            const unstakeSelect = document.getElementById('unstakeWalletName');
-            
-            // Clear existing options except the first one for stake select
-            while (stakeSelect.options.length > 1) {
-                stakeSelect.remove(1);
-            }
-            
-            // Clear existing options except stake_2 for unstake select
-            while (unstakeSelect.options.length > 1) {
-                unstakeSelect.remove(1);
-            }
-            
-            // Add new options from balance container
-            walletElements.forEach(element => {
-                const walletName = element.querySelector('.balance-title').textContent.trim();
-                
-                // Add to stake select
-                const stakeOption = document.createElement('option');
-                stakeOption.value = walletName;
-                stakeOption.textContent = walletName;
-                stakeSelect.appendChild(stakeOption);
-                
-                // Add to unstake select
-                const unstakeOption = document.createElement('option');
-                unstakeOption.value = walletName;
-                unstakeOption.textContent = walletName;
-                unstakeSelect.appendChild(unstakeOption);
-            });
-        }
 
         // Helper function to set button loading state
         function setButtonLoading(button, isLoading) {
@@ -555,9 +503,6 @@
             toggleRateTolerance();
             toggleUnstakeRateTolerance();
         });
-
-        // Initial balance fetch
-        fetchBalances(); 
     </script>
 </body>
 </html> 
