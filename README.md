@@ -18,10 +18,26 @@ Proxy for Bittensor Staking - Ensuring 100% confidence and security for Subnet a
 
 ## Configure environment variables
 
-- NETWORK=<test/finney>
-- DELEGATOR=<multisig_wallet_address>
-- PROXY_WALLET=<your_wallet_name>
-- APPROVER=<approver_address> (another signatory of the multisig address)
+Create a `.env` file in the root directory with the following variables:
+
+```bash
+# Network Configuration
+NETWORK=finney
+
+# Wallet Configuration (comma-separated lists)
+WALLET_NAMES=black,white
+DELEGATORS=5F5WLLEzDBXQDdTzDYgbQ3d3JKbM15HhPdFuLMmuzcUW5xG2,5F99Qc6hZ67Jd6fW9jXgD3h9Jg4K5pQ9jXgD3h9Jg4K5p
+
+# Default Settings
+DEFAULT_RATE_TOLERANCE=0.005
+DEFAULT_MIN_TOLERANCE=false
+DEFAULT_RETRIES=1
+
+# Legacy variables (for proxy.py script)
+DELEGATOR=<multisig_wallet_address>
+PROXY_WALLET=<your_wallet_name>
+APPROVER=<approver_address> (another signatory of the multisig address)
+```
 
 ## Add proxy
 

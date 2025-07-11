@@ -203,7 +203,7 @@
             <button class="tab tab-active" id="tab-balances" onclick="showTab('balances')">Balances</button>
             <button class="tab tab-inactive" id="tab-stake" onclick="showTab('stake')">Stake</button>
             <button class="tab tab-inactive" id="tab-unstake" onclick="showTab('unstake')">Unstake</button>
-            <button class="tab tab-inactive" id="tab-calc" onclick="showTab('calc')">Min Tolerance Calculator</button>
+            <button class="tab tab-inactive" id="tab-calc" onclick="showTab('calc')">Tolerance Calculators</button>
         </div>
         <!-- Tab Contents -->
         <div id="tabContent-balances">
@@ -294,17 +294,21 @@
         </div>
         <div id="tabContent-calc" style="display:none;">
             <div class="form-container mb-8">
-                <h2 class="text-xl font-semibold mb-4">Min Tolerance Calculator</h2>
+                <h2 class="text-xl font-semibold mb-4">Tolerance Calculators</h2>
                 <div class="input-group">
-                    <label class="input-label">TAO Amount</label>
+                    <label class="input-label">TAO Or Alpha Amount</label>
                     <input type="text" id="calcAmount" class="input-field" step="0.000001" min="0">
                 </div>
                 <div class="input-group">
                     <label class="input-label">Network ID</label>
                     <input type="text" id="calcNetuid" class="input-field" value="0">
                 </div>
-                <button onclick="calculateMinTolerance()" class="btn">Calculate</button>
-                <div id="minToleranceResult" class="mt-4 text-gray-300"></div>
+                <div class="flex gap-4">
+                    <button onclick="calculateMinStakeTolerance()" class="btn">Calculate Min Stake Tolerance</button>
+                    <button onclick="calculateMinUnstakeTolerance()" class="btn">Calculate Min Unstake Tolerance</button>
+                </div>
+                <div id="minStakeToleranceResult" class="mt-4 text-gray-300"></div>
+                <div id="minUnstakeToleranceResult" class="mt-4 text-gray-300"></div>
             </div>
         </div>
     </div>
@@ -469,21 +473,53 @@
             }
         }
 
-        // Calculate min tolerance
-        async function calculateMinTolerance() {
-            const button = document.querySelector('button[onclick="calculateMinTolerance()"]');
+        // Calculate min stake tolerance
+        async function calculateMinStakeTolerance() {
+            const button = document.querySelector('button[onclick="calculateMinStakeTolerance()"]');
             const amount = document.getElementById('calcAmount').value;
             const netuid = document.getElementById('calcNetuid').value;
 
+            if (!amount || !netuid) {
+                alert('Please enter both TAO amount and Network ID');
+                return;
+            }
+
             try {
                 setButtonLoading(button, true);
-                const response = await fetch(`/min_tolerance?tao_amount=${amount}&netuid=${netuid}`);
+                const response = await fetch(`/min_stake_tolerance?tao_amount=${amount}&netuid=${netuid}`);
                 const result = await response.json();
-                document.getElementById('minToleranceResult').textContent = 
-                    `Minimum tolerance: ${result.min_tolerance.toFixed(6)}`;
+                document.getElementById('minStakeToleranceResult').textContent = 
+                    `Min Stake Tolerance: ${result.min_tolerance.toFixed(6)}`;
             } catch (error) {
-                console.error('Error calculating min tolerance:', error);
-                alert('Error calculating min tolerance. Please try again.');
+                console.error('Error calculating min stake tolerance:', error);
+                document.getElementById('minStakeToleranceResult').textContent = 
+                    `Error: ${error.message}`;
+            } finally {
+                setButtonLoading(button, false);
+            }
+        }
+
+        // Calculate min unstake tolerance
+        async function calculateMinUnstakeTolerance() {
+            const button = document.querySelector('button[onclick="calculateMinUnstakeTolerance()"]');
+            const amount = document.getElementById('calcAmount').value;
+            const netuid = document.getElementById('calcNetuid').value;
+
+            if (!amount || !netuid) {
+                alert('Please enter both TAO amount and Network ID');
+                return;
+            }
+
+            try {
+                setButtonLoading(button, true);
+                const response = await fetch(`/min_unstake_tolerance?tao_amount=${amount}&netuid=${netuid}`);
+                const result = await response.json();
+                document.getElementById('minUnstakeToleranceResult').textContent = 
+                    `Min Unstake Tolerance: ${result.min_tolerance.toFixed(6)}`;
+            } catch (error) {
+                console.error('Error calculating min unstake tolerance:', error);
+                document.getElementById('minUnstakeToleranceResult').textContent = 
+                    `Error: ${error.message}`;
             } finally {
                 setButtonLoading(button, false);
             }

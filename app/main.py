@@ -9,6 +9,7 @@ from app.api.routes import router
 from app.core.config import settings
 from app.constants import NETWORK
 from app.services.wallets import wallets
+from app.services.stake import stake_service
 from app.services.auth import get_current_username
 
 
@@ -21,12 +22,12 @@ templates = Jinja2Templates(directory="app/templates")
 
 @app.get("/")
 def read_root(request: fastapi.Request, username: str = Depends(get_current_username)):
-    subtensor = bt.subtensor(network=NETWORK)
+    subtensor = stake_service.subtensor
     def get_balance_html():
         balance_html = ""
         for wallet_name in settings.WALLET_NAMES:
-            wallet, _ = wallets[wallet_name]
-            balance = subtensor.get_balance(wallet.coldkey.ss58_address)
+            _, delegator = wallets[wallet_name]
+            balance = subtensor.get_balance(delegator)
             balance_html += f"""
                 <div class="balance-container">
                     <div class="balance-title"><a target="_blank" href="/stake_list?wallet_name={wallet_name}" style="text-decoration: none; color: inherit; cursor: pointer; text-decoration: underline;">{wallet_name}</a></div>

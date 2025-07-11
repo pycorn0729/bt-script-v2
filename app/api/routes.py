@@ -2,17 +2,13 @@ import bittensor as bt
 from typing import Optional
 from fastapi import APIRouter, Depends
 from app.constants import ROUND_TABLE_HOTKEY, NETWORK
-from app.services.stake import StakeService
+from app.services.stake import stake_service
 from app.services.auth import get_current_username
 from app.services.wallets import wallets
 from app.core.config import settings
 
 
 router = APIRouter()
-
-# Initialize the StakeService with wallets and proxy
-stake_service = StakeService(wallets)
-
 
 @router.get("/min_stake_tolerance")
 def min_stake_tolerance(

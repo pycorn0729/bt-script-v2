@@ -1,9 +1,9 @@
 import bittensor as bt
 from typing import Dict, Tuple, Optional, Any
 
-from app.constants import ROUND_TABLE_HOTKEY
 from app.core.config import settings
 from app.services.proxy import Proxy
+from app.services.wallets import wallets
 
 
 class StakeService:
@@ -201,3 +201,6 @@ class StakeService:
             "success": success,
             "error": msg
         }
+
+
+stake_service = StakeService(wallets)
