@@ -6,6 +6,7 @@ wallets: Dict[str, Tuple[bt.wallet, str]] = {}
 
 
 def unlock_wallets():
+    print(settings.WALLET_NAMES)
     for wallet_name in settings.WALLET_NAMES:
         wallet = bt.wallet(name=wallet_name)
         print(f"Unlocking wallet {wallet_name}")
@@ -14,9 +15,6 @@ def unlock_wallets():
             try:
                 wallet.unlock_coldkey()
                 break
-            except KeyboardInterrupt:
-                print(f"\nInterrupted while unlocking wallet {wallet_name}")
-                raise  # Re-raise to exit the program
             except Exception as e:
                 print(f"Error unlocking wallet {wallet_name}: {e}")
                 continue

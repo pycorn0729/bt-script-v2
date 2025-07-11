@@ -1,19 +1,15 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-import secrets
-from typing import Optional
-from bcrypt import hashpw, gensalt, checkpw
-from dotenv import load_dotenv
-import os
 
-# Load environment variables from .env file
-load_dotenv()
+from bcrypt import checkpw
+from app.core.config import settings
+
 
 security = HTTPBasic()
 
 # Get admin hash from environment variable
 USERS = {
-    "admin": os.getenv("ADMIN_HASH", "").encode()
+    "admin": settings.ADMIN_HASH.encode()
 }
 
 def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
