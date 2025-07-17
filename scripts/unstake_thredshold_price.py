@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 
 # Add the parent directory to the Python search path (sys.path)
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -23,12 +24,14 @@ if __name__ == '__main__':
     wallet_name = input("Enter the wallet name: ")
     delegator = DELEGATORS[WALLET_NAMES.index(wallet_name)]
     dest_hotkey = input("Enter the dest hotkey: ")
+    tolerance = float(input("Enter the tolerance: "))
 
     proxy = Proxy(network=NETWORK)
     proxy.init_runtime()
     subtensor = bt.subtensor(network=NETWORK)
     wallet = bt.wallet(name=wallet_name)
     wallet.unlock_coldkey()
+
     amount_balance = subtensor.get_stake(
         coldkey_ss58=delegator,
         hotkey_ss58=dest_hotkey,
@@ -36,8 +39,9 @@ if __name__ == '__main__':
     )
 
     print("Press Ctrl+C to stop the script")
-    print(f"Wallet: {wallet_name}, Delegator: {delegator}, Dest Hotkey: {dest_hotkey}, Amount: {amount_balance.tao}")
+    print(f"Wallet: {wallet_name}, Delegator: {delegator}, Dest Hotkey: {dest_hotkey}, Amount: {amount_balance.tao}, Tolerance: {tolerance}")
 
+    time.sleep(10)
     while True:
         try:
             subnet = subtensor.subnet(netuid=netuid)
@@ -62,7 +66,7 @@ if __name__ == '__main__':
                 netuid=netuid,
                 hotkey=dest_hotkey,
                 amount=amount_balance,
-                tolerance=0.005,
+                tolerance=tolerance,
             )
             break
         except KeyboardInterrupt:
