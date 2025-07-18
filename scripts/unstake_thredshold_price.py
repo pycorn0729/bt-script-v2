@@ -10,7 +10,7 @@ if parent_dir not in sys.path:
 import bittensor as bt
 from typing import List
 
-from app.constants import NETWORK
+from app.core.config import settings
 from app.services.proxy import Proxy
 from utils.logger import logger
 
@@ -26,9 +26,9 @@ if __name__ == '__main__':
     dest_hotkey = input("Enter the dest hotkey: ")
     tolerance = float(input("Enter the tolerance: "))
 
-    proxy = Proxy(network=NETWORK)
+    proxy = Proxy(network=settings.NETWORK)
     proxy.init_runtime()
-    subtensor = bt.subtensor(network=NETWORK)
+    subtensor = bt.subtensor(network=settings.NETWORK)
     wallet = bt.wallet(name=wallet_name)
     wallet.unlock_coldkey()
 
