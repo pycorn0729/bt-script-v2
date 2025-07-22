@@ -46,7 +46,7 @@ if __name__ == '__main__':
         if input().lower() == 'y':
             while True:
                 try:
-                    proxy.remove_stake(
+                    success, msg = proxy.remove_stake(
                         proxy_wallet=wallet,
                         delegator=delegator,
                         netuid=netuid,
@@ -54,7 +54,8 @@ if __name__ == '__main__':
                         amount=amount_balance,
                         tolerance=tolerance,
                     )
-                    break
+                    if success:
+                        break
                 except Exception as e:
                     logger.error(f"Error: {e}")
                     continue
