@@ -22,11 +22,11 @@ def get_stake_list(subtensor, wallet_ss58):
 
     table = Table(title="Stake Infos", show_lines=True)
     table.add_column("NetUID", justify="right", no_wrap=True)
-    table.add_column("Hotkey SS58")
-    table.add_column("Stake", justify="right")
     table.add_column("Subnet Name")
-    table.add_column("Price")
     table.add_column("Value")
+    table.add_column("Stake", justify="right")
+    table.add_column("Price")
+    table.add_column("Hotkey SS58")
 
     # stake_infos is a list of StakeInfo objects
     total_value = 0
@@ -35,13 +35,15 @@ def get_stake_list(subtensor, wallet_ss58):
         value = get_amount(subnet_info.tao_in.tao, subnet_info.alpha_in.tao, info.stake.tao)
         table.add_row(
             str(info.netuid),
-            info.hotkey_ss58,
-            str(info.stake.tao),
             subnet_info.subnet_name,
-            str(subnet_info.price.tao),
-            str(value),
+            f"{value:.2f}",
+            f"{info.stake.tao:.2f}",
+            f"{subnet_info.price.tao:.4f}",
+            info.hotkey_ss58,
         )
         total_value += value
+
+
 
     balance = subtensor.get_balance(wallet_ss58)
     
