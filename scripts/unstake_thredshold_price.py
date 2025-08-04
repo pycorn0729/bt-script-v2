@@ -50,8 +50,18 @@ if __name__ == '__main__':
                 logger.error(f"Subnet is None for netuid: {netuid}")
                 continue
 
+            amount_balance = subtensor.get_stake(
+                coldkey_ss58=delegator,
+                hotkey_ss58=dest_hotkey,
+                netuid=netuid
+            )
+
             if amount_balance is None:
                 logger.error(f"Amount balance is None for netuid: {netuid}")
+                continue
+
+            if amount_balance.tao < 1:
+                logger.info(f"Amount balance is less than 1 TAO for netuid: {netuid}. Skipping...")
                 continue
             
             alpha_price = subnet.alpha_to_tao(1)
