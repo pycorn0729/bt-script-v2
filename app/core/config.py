@@ -21,8 +21,8 @@ class Settings(BaseModel):
     # WALLET_NAMES: List[str] = os.getenv("WALLET_NAMES", "").split(",")
     # DELEGATORS: List[str] = os.getenv("DELEGATORS", "").split(",")
     WALLET_NAMES: List[str] = ["black", "green"]
-    DELEGATORS: List[str] = ["5F5WLLEzDBXQDdTzDYgbQ3d3JKbM15HhPdFuLMmuzcUW5xG2","5HX2u5S2uEgPxKejfF8UzEYkRcRS2xqADnk8P41c2gM6UQg3"]
+    DELEGATORS: List[str] = ["5DZhYqgHhRPYUHqjaU2gS2LNL7VS8Fb5utxZ7QEkVGqTnmh5","5FWhdv8o7fGo6yn54qXCn1xTxXsMaNLaotKYzUSG2iZp4tVZ"]
     
-    ADMIN_HASH: str = os.getenv("ADMIN_HASH", "")
+    ADMIN_HASH: str = "$2b$12$rFj2f8j0jphOUMy3ZMjfdO9wQedLq7zSHmsjYDOU9zZkULYkdfMj2"
 
 settings = Settings()

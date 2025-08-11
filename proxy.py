@@ -53,6 +53,7 @@ def create_parser() -> argparse.ArgumentParser:
     transfer_parser = subparsers.add_parser('transfer', help='Transfer balance between hotkeys')
     transfer_parser.add_argument('--destination', type=str, required=True, help='Destination coldkey address')
     transfer_parser.add_argument('--amount', type=float, default=0, help='Amount to transfer')
+    transfer_parser.add_argument('--name', type=str, default=".env", help='Specify the environment')
 
     # Stake transfer command
     transfer_stake_parser = subparsers.add_parser('transferstake', help='Transfer stake between hotkeys')
@@ -61,6 +62,7 @@ def create_parser() -> argparse.ArgumentParser:
     transfer_stake_parser.add_argument('--destination', type=str, required=True, help='Destination coldkey address')
     transfer_stake_parser.add_argument('--amount', type=float, default=0, help='Amount to transfer')
     transfer_stake_parser.add_argument('--all', action='store_true', help='Swap all available balance')
+    transfer_stake_parser.add_argument('--name', type=str, default=".env", help='Specify the environment')
     
     return parser
 
@@ -146,13 +148,13 @@ def main():
     elif args.name == "webgenie":
         env_file = f".env.vlad.webgenie" 
     elif args.name == "green":
-        env_file = f".env.vlad.green" 
+        env_file = f".env.vlad.newgreen" 
     elif args.name == "black":
-        env_file = f".env.vlad.black" 
+        env_file = f".env.vlad.newblack" 
     elif args.name == "breo":
-        env_file = f".env.breo.breo" 
+        env_file = f".env.breo.newbreo" 
     elif args.name == "kb":
-        env_file = f".env.breo.kb" 
+        env_file = f".env.breo.newkb" 
     elif args.name == "tck":
         env_file = f".env.breo.tck" 
     elif args.name == "lazyterry":
