@@ -74,7 +74,6 @@ class RonProxy:
         else:
             rate_with_tolerance = "1"
             price_with_tolerance = Balance.from_rao(1)
-
         call = self.substrate.compose_call(
             call_module='SubtensorModule',
             call_function='add_stake_limit',
@@ -86,7 +85,7 @@ class RonProxy:
                 "allow_partial": False,
             }
         )
-        is_success, error_message = self._do_proxy_call(call)
+        is_success, error_message = self._do_proxy_call(call, 'Staking')
         if is_success:
             new_free_balance = self.subtensor.get_balance(
                 address=self.delegator,
@@ -161,6 +160,23 @@ class RonProxy:
             address=self.delegator,
         )
         
+        subnet_info = self.subtensor.subnet(netuid)
+        if not subnet_info:
+            print(f"Subnet with netuid {netuid} does not exist")
+            return
+        
+        if subnet_info.is_dynamic:
+            rate = subnet_info.price.tao or 1
+            rate_with_tolerance = rate * (
+                1 - tolerance
+            )  # Rate only for display
+            price_with_tolerance = subnet_info.price.rao * (
+                1 - tolerance
+            )  # Actual price to pass to extrinsic
+        else:
+            rate_with_tolerance = 1
+            price_with_tolerance = 1
+            
         call = self.substrate.compose_call(
             call_module='SubtensorModule',
             call_function='remove_stake_limit',
@@ -172,7 +188,7 @@ class RonProxy:
                 "allow_partial": False,
             }
         )
-        is_success, error_message = self._do_proxy_call(call)
+        is_success, error_message = self._do_proxy_call(call, 'Staking')
         if is_success:
             free_new_balance = self.subtensor.get_balance(
                 address=self.delegator,
@@ -232,20 +248,137 @@ class RonProxy:
                 'alpha_amount': amount.rao,
             }
         )
-        is_success, error_message = self._do_proxy_call(call)
+        is_success, error_message = self._do_proxy_call(call, 'Staking')
         if is_success:
             print(f"Stake swapped successfully")
         else:
             print(f"Error: {error_message}")
+            
+            
+    def burned_register(self, hotkey: str, netuid: int) -> None:
+        """
+        Do burned register.
+        
+        Args:
+            hotkey: Hotkey address
+            netuid: Subnet ID
+        """
+        balance = self.subtensor.get_balance(
+            address=self.delegator,
+        )
+        print(f"Current balance: {balance}")
+        
+        confirm = input(f"Do you really want to register? (y/n)")
+        if confirm == "y":
+            pass
+        else:
+            return
+        
+        call = self.substrate.compose_call(
+            call_module='SubtensorModule',
+            call_function='burned_register',
+            call_params={
+                'netuid': netuid,
+                'hotkey': hotkey,
+            }
+        )
+        is_success, error_message = self._do_proxy_call(call, 'Registration')
+        if is_success:
+            print(f"Register successfully")
+        else:
+            print(f"Error: {error_message}")
 
+    def transfer(self, destination: str, amount: Balance) -> None:
+        """
+        Transfer balance between hotkeys.
+        
+        Args:
+            destination: Destination coldkey address
+            amount: Amount to transfer
+        """
+        balance = self.subtensor.get_balance(
+            address=self.delegator,
+        )
+        print(f"Current balance: {balance}")
+        
+        confirm = input(f"Do you really want to transfer {amount}? (y/n)")
+        if confirm == "y":
+            pass
+        else:
+            return
+        
+        call = self.substrate.compose_call(
+            call_module='Balances',
+            call_function='transfer_keep_alive',
+            call_params={
+                'dest': destination,
+                'value': amount.rao,
+            }
+        )
 
-    def _do_proxy_call(self, call) -> tuple[bool, str]:
+        is_success, error_message = self._do_proxy_call(call, 'Transfer')
+        if is_success:
+            print(f"Transfer successfully")
+        else:
+            print(f"Error: {error_message}")
+
+    def transfer_stake(self, netuid: int, hotkey: str, destination: str, amount: Balance, all: bool = False) -> None:
+        """
+        Transfer stake between hotkeys.
+        
+        Args:
+            netuid: Subnet ID
+            destination: Destination coldkey address
+            amount: Amount to transfer
+        """
+        balance = self.subtensor.get_stake(
+            coldkey_ss58=self.delegator,
+            hotkey_ss58=hotkey,
+            netuid=netuid,
+        )
+        print(f"Current stake: {balance}")
+
+        if all:
+            confirm = input("Do you really want to transfer all available stake? (y/n)")
+            if confirm == "y":
+                amount = balance
+            else:
+                return
+        else:
+            confirm = input(f"Do you really want to transfer {amount}? (y/n)")
+            if confirm == "y":
+                pass
+            else:
+                return
+
+        if amount.rao > balance.rao:
+            print(f"Error: Amount to transfer is greater than current stake")
+            return
+
+        call = self.substrate.compose_call(
+            call_module='SubtensorModule',
+            call_function='transfer_stake',
+            call_params={
+                'destination_coldkey': destination,
+                'hotkey': hotkey,
+                'origin_netuid': netuid,
+                'destination_netuid': netuid,
+                'alpha_amount': amount.rao,
+            }
+        )
+        is_success, error_message = self._do_proxy_call(call, 'Transfer')
+        if is_success:
+            print(f"Stake transferred successfully")
+        else:
+            print(f"Error: {error_message}")
+
+    def _do_proxy_call(self, call, proxy_type) -> tuple[bool, str]:
         proxy_call = self.substrate.compose_call(
             call_module='Proxy',
             call_function='proxy',
             call_params={
                 'real': self.delegator,
-                'force_proxy_type': 'Staking',
+                'force_proxy_type': proxy_type,
                 'call': call,
             }
         )
@@ -259,8 +392,14 @@ class RonProxy:
                 wait_for_inclusion=True,
                 wait_for_finalization=False,
             )
-        except Exception as e:
-            error_message = str(e)
+        except SubstrateRequestException as e:
+            error_message = e.message
+            if "Custom error: 8" in str(e):
+                error_message = f"""
+                    \n{failure_prelude}: Price exceeded tolerance limit.
+                    Transaction rejected because partial unstaking is disabled.
+                    Either increase price tolerance or enable partial unstaking.
+                """
             return False, error_message
         
         print(f"Extrinsic: {receipt.get_extrinsic_identifier()}")
