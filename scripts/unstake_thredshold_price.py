@@ -17,7 +17,7 @@ from utils.logger import logger
 
 
 WALLET_NAMES: List[str] = ["black", "green"]
-DELEGATORS: List[str] = ["5F5WLLEzDBXQDdTzDYgbQ3d3JKbM15HhPdFuLMmuzcUW5xG2","5HX2u5S2uEgPxKejfF8UzEYkRcRS2xqADnk8P41c2gM6UQg3"]
+DELEGATORS: List[str] = ["5DZhYqgHhRPYUHqjaU2gS2LNL7VS8Fb5utxZ7QEkVGqTnmh5","5HX2u5S2uEgPxKejfF8UzEYkRcRS2xqADnk8P41c2gM6UQg3"]
 
 if __name__ == '__main__':
     netuid = int(input("Enter the netuid: "))
