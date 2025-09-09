@@ -81,13 +81,8 @@ def stake(
     if retries < 1:
         retries = 1
     result = None
-    min_tolerance = None
     wallet = wallets[wallet_name]
     subtensor = bt.subtensor(network=NETWORK)
-    subnet = subtensor.subnet(netuid=netuid)
-    min_tolerance = tao_amount / subnet.tao_in.tao  
-    if min_tolerance_staking:
-        rate_tolerance = min_tolerance * 1.1
 
     while retries > 0:
         try:
@@ -106,7 +101,6 @@ def stake(
             return {
                 "success": True,
                 "result": result,
-                "min_tolerance": min_tolerance,
             }
         except Exception as e:
             retries -= 1
@@ -114,7 +108,6 @@ def stake(
                 return {
                     "success": False,
                     "result": result,
-                    "min_tolerance": min_tolerance,
                 }
 
 
@@ -145,11 +138,6 @@ def unstake(
     else:
         amount = bt.Balance.from_tao(amount / subnet.price.tao, netuid)
                     
-    min_tolerance = amount.tao / (amount.tao + subnet.alpha_in.tao)
-
-    if min_tolerance_unstaking:
-        rate_tolerance = min_tolerance * 1.1
-
     while retries > 0:
         try:
             result = subtensor.unstake(
@@ -166,7 +154,6 @@ def unstake(
             return {
                 "success": True,
                 "result": result,
-                "min_tolerance": min_tolerance,
             }
         
         except Exception as e:
@@ -175,5 +162,4 @@ def unstake(
                 return {
                     "success": False,
                     "result": result,
-                    "min_tolerance": min_tolerance,
                 }
